@@ -6,12 +6,53 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Example {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model Admin {
+    id        String   @id @default(cuid())
+    username  String
+    password  String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Course {
+    id         String     @id @default(cuid())
+    coursename String
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @updatedAt
+    Students   Students[]
+}
+
+model Capstone {
+    id            String     @id @default(cuid())
+    capstoneTitle String
+    url           String
+    createdAt     DateTime   @default(now())
+    updatedAt     DateTime   @updatedAt
+    Students      Students[]
+}
+
+model Students {
+    id         String    @id @default(cuid())
+    firstname  String
+    lastname   String
+    username   String
+    password   String
+    address    String
+    gender     String
+    studentNo  String
+    image      String? 
+    courseId   String?
+    Course     Course?   @relation(fields: [courseId], references: [id])
+    capstoneId String?
+    capstone   Capstone? @relation(fields: [capstoneId], references: [id])
 }
