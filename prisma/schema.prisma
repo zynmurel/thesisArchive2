@@ -51,6 +51,7 @@ model Students {
     gender     String
     studentNo  String
     image      String? 
+    status     Boolean   @default(false)
     courseId   String?
     Course     Course?   @relation(fields: [courseId], references: [id])
     capstoneId String?

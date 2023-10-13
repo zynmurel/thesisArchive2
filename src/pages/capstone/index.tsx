@@ -1,9 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import React, { useEffect } from "react";
 import DashboardLayout from "../component/DashboardLayout";
 import {
   Dropdown,
   Form,
   Modal,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Space,
   Table,
   Button,
@@ -28,43 +35,42 @@ const data: DataType[] = [
   {
     key: "1",
     title: "John Brown",
-    date: "3/23/2018",
+    date: "3/20/2018",
     adviser: "Ervin rodriguez",
     course: "CCIS",
     images: "/ccis-logo.png",
   },
   {
     key: "1",
-    title: "John Brown",
-    date: "3/23/2018",
+    title: "Cohn Brown",
+    date: "3/21/2018",
     adviser: "Ervin rodriguez",
     course: "CCIS",
     images: "/ccis-logo.png",
   },
   {
     key: "1",
-    title: "John Brown",
-    date: "3/23/2018",
+    title: "Dohn Brown",
+    date: "3/22/2018",
     adviser: "Ervin rodriguez",
     course: "CCIS",
     images: "/ccis-logo.png",
   },
 ];
 
-
-
 function Capstone() {
-  let id:any = null
-  if (typeof window !== 'undefined') {
-    id = localStorage.getItem("id")  
+  let id: any = null;
+  if (typeof window !== "undefined") {
+    id = localStorage.getItem("id");
   }
-  const {data:studentData} =  api.example.studentDetails.useQuery({id:id})
+  const { data: studentData, refetch } = api.example.studentDetails.useQuery({
+    id: id,
+  });
   console.log(studentData);
-  
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalCapstone, setModalCapstone] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
   const [value, setValue] = useState(1);
   const [course, setCourse] = useState("");
@@ -89,11 +95,6 @@ function Capstone() {
     setValue(e.target.value);
   };
 
-  const courseChange = (e: RadioChangeEvent) => {
-    console.log("radio checked", e.target.value);
-    setCourse(e.target.value);
-  };
-
   const showCapstoneModal = () => {
     setModalCapstone(true);
   };
@@ -114,10 +115,9 @@ function Capstone() {
     console.log("Failed:", errorInfo);
   };
   const uploadProps = {
-    action: "https://www.example.com/upload", // Specify the URL where you want to handle file upload
-    accept: ".pdf,.doc,.docx", // Allow only PDF and Word files
+    action: "https://www.example.com/upload",
+    accept: ".pdf,.doc,.docx",
     onChange(info: any) {
-      // Define the type for the 'info' parameter
       if (info.file.status !== "uploading") {
         console.log(info.file, info.fileList);
       }
@@ -128,21 +128,21 @@ function Capstone() {
       }
     },
   };
-  useEffect(()=>{
-    console.log("useE")
-    if (!localStorage.getItem("username")
-    
-  ){  
-    router.push("/")
-    console.log("some")
-  } 
-    
+  useEffect(() => {
+    console.log("useE");
 
+    if (typeof window !== "undefined" && !localStorage.getItem("username")) {
+      router.push("/");
+      console.log("some");
+    }
+  });
 
-  })
+  // Search functionality
+  const [searchValue, setSearchValue] = useState("");
 
-
-  
+  const handleSearchChange = (e: any) => {
+    setSearchValue(e.target.value);
+  };
 
   return (
     <>
@@ -150,10 +150,10 @@ function Capstone() {
         <ModalComponent
           isModalOpen={isModalOpen}
           handleOk={handleOk}
+          refetch={refetch}
           handleCancel={handleCancel}
           onFinish={onFinish}
           onChange={handleChange}
-          courseChange={courseChange}
         />
         <Modal
           title="ADD CAPSTONE"
@@ -206,7 +206,7 @@ function Capstone() {
 
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
               <Button
-                className=" flex items-end bg-orange-400"
+                className="flex items-end bg-orange-400"
                 type="primary"
                 htmlType="submit"
               >
@@ -217,26 +217,39 @@ function Capstone() {
         </Modal>
         ;
         <div className='   className="border " h-full  w-full border-solid  border-gray-500'>
-          <PageHeader showModal={showModal} />
+          <PageHeader studentData={studentData} showModal={showModal} />
           <div className="  mb-14 flex  justify-between ">
             <div>
               <Search
                 placeholder="input search text"
-                className=" rounded border border-solid border-gray-500 "
+                className="rounded border border-solid border-gray-500"
                 style={{ width: 200 }}
+                onChange={handleSearchChange}
+                value={searchValue}
               />
             </div>
 
             <div
               onClick={showCapstoneModal}
-              className=" bg  flex cursor-pointer items-center  justify-center  gap-3  rounded  border border-solid border-gray-500 bg-[#ece7a2]  p-2 "
+              className="bg flex cursor-pointer items-center justify-center gap-3 rounded border border-solid border-gray-500 bg-[#ece7a2] p-2"
             >
-              <p className="  font-extrabold"> ADD CAPSTONE </p>
-              <BiSolidAddToQueue className=" h-6 w-6" />
+              <p className="font-extrabold">ADD CAPSTONE</p>
+              <BiSolidAddToQueue className="h-6 w-6" />
             </div>
           </div>
 
-          <Table columns={studentViewColumns} dataSource={data} />
+          <Table
+            columns={studentViewColumns}
+            dataSource={data.filter(
+              (item) =>
+                item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+                item.date.toLowerCase().includes(searchValue.toLowerCase()) ||
+                item.adviser
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase()) ||
+                item.course.toLowerCase().includes(searchValue.toLowerCase()),
+            )}
+          />
         </div>
       </DashboardLayout>
     </>

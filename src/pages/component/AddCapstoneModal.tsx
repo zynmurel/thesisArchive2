@@ -16,9 +16,6 @@ function AddCapstoneModal({
     remember?: string;
   };
 
-
- 
-
   return (
     <>
       <Modal

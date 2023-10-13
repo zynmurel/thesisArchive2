@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Image, Space, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { BsDownload } from "react-icons/bs";
@@ -5,47 +8,68 @@ import { BsCheckCircleFill } from "react-icons/bs";
 
 interface DataType {
   key: string;
-  name: string;
-  images: string;
-  course: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+  gender: string;
+  studentNo: string;
+  image: string;
+  address: string;
 }
 
-export const studentsApprovalColumn: ColumnsType<DataType> = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
-    render: (text) => <a>{text}</a>,
-  },
-  {
-    title: "Course",
-    dataIndex: "course",
-    key: "course",
-  },
+export const studentsApprovalColumn = (
+  setOpenModal: any,
+  setStudentsData: any,
+) => {
+  return [
+    {
+      title: "Name",
+      dataIndex: "firstname",
+      key: "name",
+      render: (text: any) => <a>{text}</a>,
+    },
+    {
+      title: "course",
+      key: "course",
+      render: (_: any, record: any) => {
+        return (
+          <Space size="middle">
+            <p> {_.Course?.coursename} </p>
+          </Space>
+        );
+      },
+    },
 
-  {
-    title: "images",
-    key: "image",
-    render: (_, record) => (
-      <Space size="middle">
-        <Image src={record.images} width={50} height={50} />
-      </Space>
-    ),
-  },
-
-  {
-    title: <></>,
-    key: "action",
-    render: (_, record) => (
-      <div className=" flex  items-start justify-end gap-4">
-        <Space
-          size="middle"
-          className=" mr-24 flex w-fit cursor-pointer  gap-2 rounded bg-blue-600 px-4 py-1"
-        >
-          <BsCheckCircleFill className="  text-white" />
-          <p className=" text-white"> APPROVE STUDENT </p>
+    {
+      title: "images",
+      key: "image",
+      render: (_: any, record: any) => (
+        <Space size="middle">
+          <Image src={record.image} width={50} height={50} />
         </Space>
-      </div>
-    ),
-  },
-];
+      ),
+    },
+
+    {
+      title: <></>,
+      key: "action",
+      render: (_: any, record: any) => (
+        <div className=" flex  items-start justify-end gap-4">
+          <Space
+            size="middle"
+            className=" mr-24 flex w-fit cursor-pointer  gap-2 rounded   bg-blue-600 px-4 py-1"
+            onClick={() => {
+              setOpenModal(true);
+              setStudentsData(record.id);
+            }}
+          >
+            <BsCheckCircleFill className="  text-white" />
+            <p className=" text-white"> APPROVE STUDENT </p>
+          </Space>
+        </div>
+      ),
+    },
+  ];
+};

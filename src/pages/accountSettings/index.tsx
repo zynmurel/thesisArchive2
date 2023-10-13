@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Button, Checkbox, Form, Input } from "antd";
 import Head from "next/head";
 import Link from "next/link";
@@ -10,12 +15,32 @@ import ModalComponent from "../component/ModalComponent";
 import { useState } from "react";
 import type { RadioChangeEvent } from "antd";
 
+interface dataType {
+  id: string;
+  password: string;
+}
+
 export default function Home() {
   const router = useRouter();
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [course, setCourse] = useState("");
   const [value, setValue] = useState(1);
+
+  let id: any = null;
+
+  if (typeof window !== "undefined") {
+    id = localStorage.getItem("id");
+  }
+
+  const [form] = Form.useForm();
+
+  const { data: studentData } = api.example.studentDetails.useQuery({ id: id });
+  const { mutate } = api.example.editPassword.useMutation({
+    onSuccess: () => {
+      console.log(hello);
+    },
+  });
 
   const handleOk = () => {
     setIsModalOpen(false);
@@ -26,7 +51,23 @@ export default function Home() {
   };
 
   const onFinish = (values: any) => {
-    console.log("Received values of form: ", values);
+    if (
+      values.currentPassword === studentData?.password &&
+      values.newPassword === values.confirmPassword
+    ) {
+      mutate({
+        id: studentData?.id || "",
+
+        password: values.currentPassword,
+      });
+
+      form.resetFields();
+      setIsModalOpen(false);
+
+      alert("Password Succesfuly Change");
+    } else {
+      alert(" Not Match Credentials");
+    }
   };
 
   const courseChange = (e: RadioChangeEvent) => {
@@ -34,7 +75,6 @@ export default function Home() {
     setCourse(e.target.value);
   };
   const handleChange = (e: RadioChangeEvent) => {
-    console.log("radio checked", e.target.value);
     setValue(e.target.value);
   };
   const showModal = () => {
@@ -55,7 +95,10 @@ export default function Home() {
             showModal={showModal}
           />
 
-          <PageHeader showModal={showModal}></PageHeader>
+          <PageHeader
+            studentData={studentData}
+            showModal={showModal}
+          ></PageHeader>
 
           <div className="  mt-48 rounded border-2  border-zinc-100 bg-[#fff9b5] p-14  shadow-2xl shadow-orange-500 ">
             <div className=" flex  h-full w-full  flex-col items-center pt-10 ">
@@ -67,13 +110,14 @@ export default function Home() {
                   className="login-form"
                   initialValues={{ remember: true }}
                   onFinish={onFinish}
+                  form={form}
                 >
                   <Form.Item
-                    name="username"
+                    name="currentPassword"
                     rules={[
                       {
                         required: true,
-                        message: "Please input your Username!",
+                        message: "Please input your Current Password!",
                       },
                     ]}
                     className=" items-center"
@@ -84,7 +128,7 @@ export default function Home() {
                     />
                   </Form.Item>
                   <Form.Item
-                    name="password"
+                    name="newPassword"
                     rules={[
                       {
                         required: true,
@@ -100,7 +144,7 @@ export default function Home() {
                   </Form.Item>
 
                   <Form.Item
-                    name="password"
+                    name="confirmPassword"
                     rules={[
                       {
                         required: true,
@@ -117,7 +161,10 @@ export default function Home() {
 
                   <Form.Item className="  ">
                     <div className=" flex  justify-center gap-5">
-                      <button className="      rounded bg-yellow-200 p-4 py-1   font-bold  text-black">
+                      <button
+                        type="submit"
+                        className="rounded bg-yellow-200 p-4 py-1   font-bold  text-black"
+                      >
                         {" "}
                         Submit Changes{" "}
                       </button>

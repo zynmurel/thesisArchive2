@@ -1,38 +1,42 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { Button, Checkbox, Form, Input } from "antd";
 import Head from "next/head";
 import Link from "next/link";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
+import { useEffect } from "react";
 
 export default function Home() {
   const router = useRouter();
-  const [form] = Form.useForm()
+  const [form] = Form.useForm();
 
-  const {mutate} = api.example.loginStudent.useMutation({
-    onSuccess:(data)=>{
-
-
-
+  const { mutate } = api.example.loginStudent.useMutation({
+    onSuccess: (data) => {
       if (data) {
-          router.push("/capstone")
-          localStorage.setItem('username', data.username);
-          localStorage.setItem('id', data.id);
-      } 
-
-      else{
-
-        alert("Invalid Credentials")
-        
+        router.push("/capstone");
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("id", data.id);
+      } else {
+        alert("Invalid Credentials");
       }
-  }})
-
-
+    },
+  });
 
   const onFinish = (values: any) => {
     console.log("Received values of form: ", values);
-    mutate({username:form.getFieldValue("username"),password:form.getFieldValue("password") })
+    mutate({
+      username: form.getFieldValue("username"),
+      password: form.getFieldValue("password"),
+    });
   };
+
+  useEffect(() => {
+    if (localStorage.getItem("username")) {
+      router.push("/capstone");
+      console.log("some");
+    }
+  });
 
   return (
     <>
@@ -55,7 +59,6 @@ export default function Home() {
                 className="login-form"
                 form={form}
                 onFinish={onFinish}
-
               >
                 <Form.Item
                   name="username"

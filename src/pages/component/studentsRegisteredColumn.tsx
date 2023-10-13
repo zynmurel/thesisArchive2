@@ -1,35 +1,52 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable jsx-a11y/alt-text */
 import { Image, Space, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { BsDownload } from "react-icons/bs";
 import { BsCheckCircleFill } from "react-icons/bs";
+import { RouterOutputs } from "~/utils/api";
 
 interface DataType {
-  key: string;
-  name: string;
-  images: string;
-  course: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+  gender: string;
+  studentNo: string;
+  image: string;
+  address: string;
 }
 
-export const studentsRegisteredColumn: ColumnsType<DataType> = [
+export const studentsRegisteredColumn: ColumnsType<any> = [
   {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
-    render: (text) => <a>{text}</a>,
+    title: "firstname",
+    dataIndex: "firstname",
+    key: "firstname",
   },
 
   {
-    title: "Course",
-    dataIndex: "course",
+    title: "course",
     key: "course",
+    render: (_, record) => {
+      console.log("RECORD", record);
+
+      return (
+        <Space size="middle">
+          <p> {_.Course?.coursename} </p>
+        </Space>
+      );
+    },
   },
 
   {
     title: "images",
     key: "image",
-    render: (_, record) => (
+    render: (_) => (
       <Space size="middle">
-        <Image src={record.images} width={50} height={50} />
+        <Image src={_.image} width={50} height={50} />
       </Space>
     ),
   },

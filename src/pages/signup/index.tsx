@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/non-nullable-type-assertion-style */
 /* eslint-disable @typescript-eslint/await-thenable */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -9,9 +10,9 @@ import { Button, Form, Radio, Select, Upload, message } from "antd";
 import Head from "next/head";
 import Link from "next/link";
 import { LockOutlined, UserOutlined, UploadOutlined } from "@ant-design/icons";
-import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
+import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface";
 
-import type { UploadChangeParam } from 'antd/es/upload';
+import type { UploadChangeParam } from "antd/es/upload";
 
 import { useRouter } from "next/router";
 import type { MenuProps, RadioChangeEvent } from "antd";
@@ -44,13 +45,13 @@ interface StudentType {
   studentNo: string;
   image: string;
   address: string;
-  // image: string | null;
+  course: string;
   // courseId: string | null;
   // capstoneId: string | null;
 }
 
 export default function Home() {
-  const [form] = Form.useForm()
+  const [form] = Form.useForm();
   const [value, setValue] = useState(1);
 
   const router = useRouter();
@@ -58,10 +59,10 @@ export default function Home() {
   const [imageUrl, setImageUrl] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { mutate } = api.example.signupStudent.useMutation({
-    onSuccess:()=>{
-      form.resetFields()
-      console.log("some")
-    }
+    onSuccess: () => {
+      form.resetFields();
+      console.log("some");
+    },
   });
 
   const onFinish = (values: StudentType) => {
@@ -74,7 +75,8 @@ export default function Home() {
       gender: values.gender,
       studentNo: values.studentNo,
       image: imageUrl,
-      address: values.address
+      address: values.address,
+      course: values.course,
     });
   };
   const onChange = (e: RadioChangeEvent) => {
@@ -87,17 +89,18 @@ export default function Home() {
 
   const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result as string));
+    reader.addEventListener("load", () => callback(reader.result as string));
     reader.readAsDataURL(img);
   };
 
-
-  const handleChanges: UploadProps['onChange'] = (info: UploadChangeParam<UploadFile>) => {
-    if (info.file.status === 'uploading') {
+  const handleChanges: UploadProps["onChange"] = (
+    info: UploadChangeParam<UploadFile>,
+  ) => {
+    if (info.file.status === "uploading") {
       setLoading(true);
       return;
     }
-    if (info.file.status === 'done') {
+    if (info.file.status === "done") {
       // Get this url from response in real world.
       getBase64(info.file.originFileObj as RcFile, (url) => {
         setLoading(false);
@@ -116,13 +119,13 @@ export default function Home() {
     },
     // onChange: {handleChange}
   };
-console.log(imageUrl)
+  console.log(imageUrl);
   return (
     <>
       <div className=" flex h-screen w-full flex-col items-center justify-center   bg-green-50  ">
         <div className=" mb-10  flex flex-row items-center  justify-center">
           <img className="  my-4 h-8  w-10 " src="/ccis-logo.png  " />
-          <p className="   font-semi-bold    pt  text-gray-600" >
+          <p className="   font-semi-bold    pt  text-gray-600">
             {" "}
             Thesis Management System{" "}
           </p>
@@ -268,20 +271,20 @@ console.log(imageUrl)
                         options: [
                           {
                             label: "Bachelor Science in Information Technology",
-                            value: "BSIT",
+                            value: "clnlf94e10001mwkinbhz3gzq",
                           },
                           {
                             label: "Bachelor Science in Computer  Science",
-                            value: "BSCS",
+                            value: "clnlfa8hz0002mwkibgzcd6a9",
                           },
                           {
                             label: "Bachelor Science in Information  System",
-                            value: "BSIS",
+                            value: "clnlf85st0000mwkimbhrtgjh",
                           },
                           {
                             label:
                               "Bachelor of Science in Entertainment and Multimedia Computing",
-                            value: "BSEM",
+                            value: "clnlfbhye0003mwkivh5l1960",
                           },
                         ],
                       },
@@ -296,14 +299,17 @@ console.log(imageUrl)
                   ]}
                   className=" w-full  items-center"
                 >
-                  <Upload className=" flex flex-row  bg-orange-200 "  beforeUpload= {(file) => {
-      const isPNG = file.type === "image/png";
-      if (!isPNG) {
-        message.error(`${file.name} is not a png file`);
-      }
-      return isPNG || Upload.LIST_IGNORE;
-    }}
-    onChange= {handleChanges}>
+                  <Upload
+                    className=" flex flex-row  bg-orange-200 "
+                    beforeUpload={(file) => {
+                      const isPNG = file.type === "image/png";
+                      if (!isPNG) {
+                        message.error(`${file.name} is not a png file`);
+                      }
+                      return isPNG || Upload.LIST_IGNORE;
+                    }}
+                    onChange={handleChanges}
+                  >
                     <Button icon={<UploadOutlined />}>Upload png only</Button>
                   </Upload>
                 </Form.Item>

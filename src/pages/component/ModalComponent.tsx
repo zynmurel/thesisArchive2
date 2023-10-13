@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/non-nullable-type-assertion-style */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
@@ -20,14 +22,27 @@ import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface";
 import { UploadOutlined } from "@ant-design/icons";
 import { useForm } from "antd/es/form/Form";
 import type { UploadChangeParam } from "antd/es/upload";
+interface StudentType {
+  id: string;
+  firstname: string;
+  lastname: string;
+  username: string;
+  password: string;
+  email: string;
+  gender: string;
+  studentNo: string;
+  image: string;
+  address: string;
+  courseId: string;
+}
 
 const ModalComponent = ({
   isModalOpen,
   handleOk,
   handleCancel,
   onFinish,
-  courseChange,
   handleChange,
+  refetch: refetchStudent,
 }: any) => {
   let id: any = null;
 
@@ -36,20 +51,42 @@ const ModalComponent = ({
   }
 
   const [form] = Form.useForm();
-  const { data: studentData } = api.example.studentDetails.useQuery({ id: id });
+
+  const { data: studentData, refetch } = api.example.studentDetails.useQuery({
+    id: id,
+  });
+
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [course, setCourse] = useState("");
+
+  const { mutate } = api.example.editProfilepicture.useMutation({
+    onSuccess: () => {
+      handleCancel;
+      refetchStudent();
+      console.log("domeoesgg");
+    },
+  });
 
   useEffect(() => {
+    form.setFieldsValue(studentData);
+    form.setFieldsValue({
+      courseId: studentData?.Course?.coursename,
+    });
+
+    console.log("1233", studentData?.Course?.coursename);
+
     setImageUrl(studentData?.image || "");
   }, [studentData]);
-
-  console.log(imageUrl);
 
   const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
     reader.addEventListener("load", () => callback(reader.result as string));
     reader.readAsDataURL(img);
+  };
+  const courseChange = (e: any) => {
+    console.log("radio checked", e);
+    setCourse(e);
   };
 
   const [fileList, setFileList] = useState<UploadFile[]>([
@@ -77,22 +114,44 @@ const ModalComponent = ({
     }
   };
 
+  const editProfilepicture = (values: StudentType) => {
+    console.log(values);
+    mutate({
+      id: studentData?.id || "",
+      firstname: values.firstname,
+      lastname: values.lastname,
+      username: values.username,
+      password: values.password,
+      gender: values.gender,
+      studentNo: values.studentNo,
+      image: imageUrl,
+      address: values.address,
+      courseId: values.courseId,
+    });
+
+    form.setFieldsValue(values);
+    handleCancel(false);
+    refetch();
+  };
+
   return (
     <Modal
       centered
       title="EDIT PROFILE"
       open={isModalOpen}
       onOk={handleOk}
+      footer={[]}
       className=" p-5   "
       bodyStyle={{ height: "500px" }}
       width={1000}
       onCancel={handleCancel}
     >
       <div className=" flex   h-full  w-full  flex-row p-5  ">
-        <div className=" flex h-full flex-1  flex-col items-center justify-center ">
+        <div className=" flex h-full flex-1  flex-col items-center justify-start ">
+          <Image src={imageUrl} width={380} height={265} className="pt-2 " />
           <Upload
             maxCount={1}
-            className=" flex flex-row  bg-orange-200 "
+            className=" mt-6 flex   flex-row bg-orange-200 "
             beforeUpload={(file) => {
               const isPNG = file.type === "image/png";
 
@@ -103,15 +162,16 @@ const ModalComponent = ({
             }}
             onChange={handleChanges}
           >
-            <Button icon={<UploadOutlined />}>Upload png only</Button>
+            <Button className="" icon={<UploadOutlined />}>
+              Upload png only
+            </Button>
           </Upload>
-          <Image src={imageUrl} width={380} height={265} className="pt-2 " />
         </div>
         <div className="  flex  h-full flex-1 flex-col p-3 ">
           <Form
             name="normal_login"
             className="login-form"
-            onFinish={onFinish}
+            onFinish={editProfilepicture}
             form={form}
           >
             <div className=" flex flex-row gap-2">
@@ -120,24 +180,18 @@ const ModalComponent = ({
                 rules={[
                   { required: true, message: "Please input your First Name!" },
                 ]}
-                className=" items-center"
+                className=" w-full"
               >
-                <input
-                  className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center"
-                  placeholder={studentData?.firstname}
-                />
+                <input className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center" />
               </Form.Item>
               <Form.Item
                 name="lastname"
                 rules={[
                   { required: true, message: "Please input your Lastname!" },
                 ]}
-                className=" items-center"
+                className=" w-full"
               >
-                <input
-                  className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center"
-                  placeholder={studentData?.lastname}
-                />
+                <input className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center" />
               </Form.Item>
             </div>
             <div className=" flex flex-row gap-2">
@@ -146,24 +200,18 @@ const ModalComponent = ({
                 rules={[
                   { required: true, message: "Please input your Username!" },
                 ]}
-                className=" items-center"
+                className=" w-full"
               >
-                <input
-                  className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center"
-                  placeholder={studentData?.username}
-                />
+                <input className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center" />
               </Form.Item>
               <Form.Item
                 name="password"
                 rules={[
                   { required: true, message: "Please input your Password!" },
                 ]}
-                className=" items-center"
+                className=" w-full"
               >
-                <input
-                  className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center"
-                  placeholder={studentData?.password}
-                />
+                <input className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center" />
               </Form.Item>
             </div>
             <Form.Item
@@ -173,10 +221,7 @@ const ModalComponent = ({
               ]}
               className=" items-center"
             >
-              <input
-                className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center"
-                placeholder={studentData?.address}
-              />
+              <input className=" flex h-8  w-full border border-solid border-gray-500 bg-white text-center" />
             </Form.Item>
 
             <div className=" flex flex-row gap-2">
@@ -185,11 +230,9 @@ const ModalComponent = ({
                 rules={[
                   { required: true, message: "Please input your Password!" },
                 ]}
-                className=" w-1/2  items-center"
+                className=" w-full"
               >
                 <Select
-                  className=" flex h-8  text-center    "
-                  defaultValue={studentData?.gender}
                   onChange={handleChange}
                   options={[
                     {
@@ -203,28 +246,24 @@ const ModalComponent = ({
               </Form.Item>
 
               <Form.Item
-                name="studentId"
+                className=" w-full"
+                name="studentNo"
                 rules={[
                   { required: true, message: "Please input your Student-ID!" },
                 ]}
-                className=" min-w-1/2 items-center"
               >
-                <input
-                  className=" flex h-8  border  border-solid border-gray-500 bg-white text-center"
-                  placeholder={studentData?.studentNo}
-                />
+                <input className=" flex h-8  w-full  border border-solid border-gray-500 bg-white text-center" />
               </Form.Item>
             </div>
             <Form.Item
-              name="course"
+              name="courseId"
               rules={[
                 { required: true, message: "Please input your Password!" },
               ]}
               className=" items-center"
             >
               <Select
-                className=" flex h-8  min-w-full pl-4  text-center"
-                defaultValue={studentData?.Course?.coursename}
+                className=" flex h-8  min-w-full pl-0  text-center"
                 style={{ width: 200 }}
                 onChange={courseChange}
                 options={[
@@ -233,25 +272,29 @@ const ModalComponent = ({
                     options: [
                       {
                         label: "Bachelor Science in Information Technology",
-                        value: "BSIT",
+                        value: "clnlf94e10001mwkinbhz3gzq",
                       },
                       {
                         label: "Bachelor Science in Computer  Science",
-                        value: "BSCS",
+                        value: "clnlfa8hz0002mwkibgzcd6a9",
                       },
                       {
                         label: "Bachelor Science in Information  System",
-                        value: "BSIS",
+                        value: "clnlf85st0000mwkimbhrtgjh",
                       },
                       {
                         label:
                           "Bachelor of Science in Entertainment and Multimedia Computing",
-                        value: "BSEM",
+                        value: "clnlfbhye0003mwkivh5l1960",
                       },
                     ],
                   },
                 ]}
               />
+            </Form.Item>
+
+            <Form.Item className=" mt-36 flex items-end justify-center  rounded  bg-orange-300 p-0 text-2xl  ">
+              <button type="submit"> Edit Changes</button>
             </Form.Item>
           </Form>
         </div>

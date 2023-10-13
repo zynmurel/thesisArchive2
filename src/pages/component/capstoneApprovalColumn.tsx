@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Image, Space, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { DataType } from "../dataType/types";
 import { BsDownload } from "react-icons/bs";
 import { BsCheckCircleFill } from "react-icons/bs";
 
-export const capstoneApprovalColumn: ColumnsType<DataType> = [
+export const capstoneApprovalColumn: ColumnsType<any> = [
   {
     title: "Title",
     dataIndex: "title",
