@@ -17,6 +17,10 @@ import { capstoneManagementColumn } from "~/pages/component/capstoneManagementCo
 import { UploadOutlined } from "@ant-design/icons";
 
 import { api } from "~/utils/api";
+import App from "~/pages/sampleUpload";
+import { storage } from "~/config/firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { v4 } from "uuid";
 
 const { Search } = Input;
 
@@ -86,13 +90,13 @@ const managementCapstoneData: DataType[] = [
 ];
 
 function AdminCapstone() {
+  const [form] = Form.useForm();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTabKey1, setActiveTabKey1] = useState<string>("tab1");
   const { data } = api.example.notApprovedStudents.useQuery();
   const [modalCapstone, setModalCapstone] = useState(false);
-
-  console.log("APPROVED STUDENT", data);
+  const [imageUpload, setImageUpload] = useState<any>(null);
 
   const adminCapstonTab: Record<string, React.ReactNode> = {
     tab1: (
@@ -124,9 +128,56 @@ function AdminCapstone() {
   const capstoneModalCancel = () => {
     setModalCapstone(false);
   };
-
+  const { mutate } = api.capstone.createCapstone.useMutation({
+    onSuccess: (data) => {
+      console.log(data);
+      if (!data) {
+        form.setFields([
+          {
+            name: "capstoneLeader",
+            errors: ["Student Id not Found"],
+          },
+        ]);
+      } else {
+        form.resetFields();
+        setModalCapstone(false);
+      }
+    },
+  });
+  const uploadImage = (e: any) => {
+    if (!imageUpload) {
+      form.setFields([
+        {
+          name: "capstoneFile",
+          errors: ["Capstone File Required"],
+        },
+      ]);
+    } else {
+      const imageRef = ref(storage, `files/${imageUpload.name + v4()}`);
+      uploadBytes(imageRef, imageUpload).then((data: any) => {
+        getDownloadURL(data.ref).then((d) => {
+          mutate({
+            title: e.title,
+            abstract: e.abstract,
+            topic: e.topic,
+            adviser: e.adviser,
+            url: d,
+            studentMembers: e.studentMembers,
+            studentNo: e.capstoneLeader,
+          });
+        });
+      });
+    }
+  };
   const onFinishCapstoneForm = (values: any) => {
-    console.log("Success:", values);
+    if (!imageUpload) {
+      form.setFields([
+        {
+          name: "capstoneFile",
+          errors: ["Capstone File Required"],
+        },
+      ]);
+    }
   };
 
   const onFinishFailedCapstoneForm = (errorInfo: any) => {
@@ -152,10 +203,8 @@ function AdminCapstone() {
   };
 
   useEffect(() => {
-    console.log("useE");
     if (!localStorage.getItem("username")) {
       router.push("/admin/login");
-      console.log("some");
     }
   });
 
@@ -172,10 +221,35 @@ function AdminCapstone() {
       >
         <Form
           name="basic"
-          onFinish={onFinishCapstoneForm}
+          onFinish={uploadImage}
           onFinishFailed={onFinishFailedCapstoneForm}
           autoComplete="off"
+          form={form}
         >
+          <Form.Item
+            name="capstoneLeader"
+            rules={[
+              {
+                required: true,
+                message: " Input  student leader",
+              },
+            ]}
+          >
+            <Input placeholder="student Leader" />
+          </Form.Item>
+
+          <Form.Item
+            name="studentMembers"
+            rules={[
+              {
+                required: true,
+                message: " Input  student  members",
+              },
+            ]}
+          >
+            <Input placeholder="student Members" />
+          </Form.Item>
+
           <Form.Item
             name="title"
             rules={[
@@ -189,23 +263,30 @@ function AdminCapstone() {
           </Form.Item>
 
           <Form.Item
-            name="adviser"
-            rules={[{ required: true, message: "Please input Adviser Name  " }]}
+            name="topic"
+            rules={[{ required: true, message: "Please input Topic Name  " }]}
           >
-            <Input placeholder="Your Capstone Adviser" />
+            <Input placeholder="Your Capstone  Topic" />
           </Form.Item>
 
           <Form.Item
-            name="uploadFiles"
-            rules={[{ required: true, message: "Please Upload Your Files  " }]}
+            name="abstract"
+            rules={[{ required: true, message: "Please input Abstract  " }]}
           >
-            <Upload {...uploadProps}>
-              <Button icon={<UploadOutlined />}>
-                Upload PDF or Word Files
-              </Button>
-            </Upload>
+            <Input placeholder="Input Abstract" />
           </Form.Item>
 
+          <Form.Item
+            name="adviser"
+            rules={[{ required: true, message: "Please input Adviser Name  " }]}
+          >
+            <Input placeholder=" Abstract" />
+          </Form.Item>
+          <App
+            imageUpload={imageUpload}
+            setImageUpload={setImageUpload}
+            form={form}
+          />
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button
               className="flex items-end bg-orange-400"

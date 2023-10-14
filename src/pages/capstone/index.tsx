@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -29,36 +30,14 @@ import PageHeader from "../component/PageHeader";
 import { studentViewColumns } from "../component/studentViewColumns";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "~/config/firebase";
+import { v4 } from "uuid";
+import App from "../sampleUpload";
 const { Search } = Input;
 
-const data: DataType[] = [
-  {
-    key: "1",
-    title: "John Brown",
-    date: "3/20/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-  {
-    key: "1",
-    title: "Cohn Brown",
-    date: "3/21/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-  {
-    key: "1",
-    title: "Dohn Brown",
-    date: "3/22/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-];
-
 function Capstone() {
+  const [form] = Form.useForm();
   let id: any = null;
   if (typeof window !== "undefined") {
     id = localStorage.getItem("id");
@@ -66,8 +45,11 @@ function Capstone() {
   const { data: studentData, refetch } = api.example.studentDetails.useQuery({
     id: id,
   });
-  console.log(studentData);
 
+  const { data: approvedCapstone } = api.capstone.approvedCapstone.useQuery();
+  console.log("asfafaf", approvedCapstone);
+
+  const [imageUpload, setImageUpload] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalCapstone, setModalCapstone] = useState(false);
   const router = useRouter();
@@ -114,26 +96,11 @@ function Capstone() {
   const onFinishFailedCapstoneForm = (errorInfo: any) => {
     console.log("Failed:", errorInfo);
   };
-  const uploadProps = {
-    action: "https://www.example.com/upload",
-    accept: ".pdf,.doc,.docx",
-    onChange(info: any) {
-      if (info.file.status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
-      if (info.file.status === "done") {
-        message.success(`${info.file.name} file uploaded successfully`);
-      } else if (info.file.status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-  };
   useEffect(() => {
     console.log("useE");
 
     if (typeof window !== "undefined" && !localStorage.getItem("username")) {
       router.push("/");
-      console.log("some");
     }
   });
 
@@ -143,7 +110,47 @@ function Capstone() {
   const handleSearchChange = (e: any) => {
     setSearchValue(e.target.value);
   };
-
+  const { mutate } = api.capstone.notApprovedCapstone.useMutation({
+    onSuccess: (data) => {
+      console.log(data);
+      if (!data) {
+        form.setFields([
+          {
+            name: "capstoneLeader",
+            errors: ["Student Id not Found"],
+          },
+        ]);
+      } else {
+        form.resetFields();
+        setModalCapstone(false);
+      }
+    },
+  });
+  const uploadImage = (e: any) => {
+    if (!imageUpload) {
+      form.setFields([
+        {
+          name: "capstoneFile",
+          errors: ["Capstone File Required"],
+        },
+      ]);
+    } else {
+      const imageRef = ref(storage, `files/${imageUpload.name + v4()}`);
+      uploadBytes(imageRef, imageUpload).then((data: any) => {
+        getDownloadURL(data.ref).then((d) => {
+          mutate({
+            title: e.title,
+            abstract: e.abstract,
+            topic: e.topic,
+            adviser: e.adviser,
+            url: d,
+            studentMembers: e.studentMembers,
+            studentNo: e.capstoneLeader,
+          });
+        });
+      });
+    }
+  };
   return (
     <>
       <DashboardLayout>
@@ -166,10 +173,35 @@ function Capstone() {
         >
           <Form
             name="basic"
-            onFinish={onFinishCapstoneForm}
+            onFinish={uploadImage}
             onFinishFailed={onFinishFailedCapstoneForm}
             autoComplete="off"
+            form={form}
           >
+            <Form.Item
+              name="capstoneLeader"
+              rules={[
+                {
+                  required: true,
+                  message: " Input  student leader",
+                },
+              ]}
+            >
+              <Input placeholder="student Leader" />
+            </Form.Item>
+
+            <Form.Item
+              name="studentMembers"
+              rules={[
+                {
+                  required: true,
+                  message: " Input  student  members",
+                },
+              ]}
+            >
+              <Input placeholder="student Members" />
+            </Form.Item>
+
             <Form.Item
               name="title"
               rules={[
@@ -183,27 +215,32 @@ function Capstone() {
             </Form.Item>
 
             <Form.Item
+              name="topic"
+              rules={[{ required: true, message: "Please input Topic Name  " }]}
+            >
+              <Input placeholder="Your Capstone  Topic" />
+            </Form.Item>
+
+            <Form.Item
+              name="abstract"
+              rules={[{ required: true, message: "Please input Abstract  " }]}
+            >
+              <Input placeholder="Input Abstract" />
+            </Form.Item>
+
+            <Form.Item
               name="adviser"
               rules={[
                 { required: true, message: "Please input Adviser Name  " },
               ]}
             >
-              <Input placeholder="Your Capstone Adviser" />
+              <Input placeholder=" Abstract" />
             </Form.Item>
-
-            <Form.Item
-              name="uploadFiles"
-              rules={[
-                { required: true, message: "Please Upload Your Files  " },
-              ]}
-            >
-              <Upload {...uploadProps}>
-                <Button icon={<UploadOutlined />}>
-                  Upload PDF or Word Files
-                </Button>
-              </Upload>
-            </Form.Item>
-
+            <App
+              imageUpload={imageUpload}
+              setImageUpload={setImageUpload}
+              form={form}
+            />
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
               <Button
                 className="flex items-end bg-orange-400"
@@ -233,6 +270,7 @@ function Capstone() {
               onClick={showCapstoneModal}
               className="bg flex cursor-pointer items-center justify-center gap-3 rounded border border-solid border-gray-500 bg-[#ece7a2] p-2"
             >
+              <div></div>
               <p className="font-extrabold">ADD CAPSTONE</p>
               <BiSolidAddToQueue className="h-6 w-6" />
             </div>
@@ -240,8 +278,8 @@ function Capstone() {
 
           <Table
             columns={studentViewColumns}
-            dataSource={data.filter(
-              (item) =>
+            dataSource={approvedCapstone?.filter(
+              (item: any) =>
                 item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
                 item.date.toLowerCase().includes(searchValue.toLowerCase()) ||
                 item.adviser

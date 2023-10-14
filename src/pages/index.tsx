@@ -6,6 +6,7 @@ import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import { useEffect } from "react";
+import App from "./sampleUpload";
 
 export default function Home() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function Home() {
 
   return (
     <>
+      <App />
       <div className=" flex h-screen w-full flex-col items-center justify-center    bg-green-50  ">
         <p className="   pb-6  font-bold  text-gray-600 ">
           {" "}

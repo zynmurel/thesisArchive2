@@ -205,4 +205,6 @@ export const exampleRouter = createTRPCRouter({
       });
       return { success: true, student };
     }),
+
+  // createCapstone: publicProcedure(),
 });
