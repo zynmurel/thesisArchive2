@@ -57,6 +57,38 @@ export const exampleRouter = createTRPCRouter({
       return { success: true, student };
     }),
 
+  signupStudentAdmin: publicProcedure
+    .input(
+      z.object({
+        firstName: z.string(),
+        lastName: z.string(),
+        username: z.string(),
+        password: z.string(),
+        gender: z.string(),
+        studentNo: z.string(),
+        image: z.string(),
+        address: z.string(),
+        course: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const student = await ctx.prisma.students.create({
+        data: {
+          status: true,
+          firstname: input.firstName,
+          lastname: input.lastName,
+          username: input.username,
+          password: input.password,
+          gender: input.gender,
+          studentNo: input.studentNo,
+          image: input.image,
+          address: input.address,
+          courseId: input.course,
+        },
+      });
+      return { success: true, student };
+    }),
+
   loginStudent: publicProcedure
     .input(
       z.object({
@@ -68,7 +100,7 @@ export const exampleRouter = createTRPCRouter({
       const hasStudent = await ctx.prisma.students.findFirst({
         where: {
           AND: [
-            { username: { equals: input.username } },
+            { studentNo: { equals: input.username } },
             { password: { equals: input.password } },
           ],
         },
@@ -106,6 +138,7 @@ export const exampleRouter = createTRPCRouter({
         where: { id: input.id || "" },
         include: {
           Course: true,
+          capstone: true,
         },
       });
       return studentData;
@@ -206,5 +239,7 @@ export const exampleRouter = createTRPCRouter({
       return { success: true, student };
     }),
 
-  // createCapstone: publicProcedure(),
+  courseData: publicProcedure.query(({ ctx }) => {
+    return ctx.prisma.course.findMany({});
+  }),
 });

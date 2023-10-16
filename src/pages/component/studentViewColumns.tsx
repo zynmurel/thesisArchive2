@@ -4,67 +4,66 @@ import type { ColumnsType } from "antd/es/table";
 import { DataType } from "../dataType/types";
 import { BsDownload } from "react-icons/bs";
 
-export const studentViewColumns: ColumnsType<any> = [
-  {
-    title: "Title",
-    dataIndex: "title",
-    key: "title",
-    render: (text) => <a>{text}</a>,
-  },
-  {
-    title: "date",
-    dataIndex: "date",
-    key: "date",
-  },
-  {
-    title: "Course",
-    dataIndex: "Students",
-    key: "course",
-    render: (_) => {
-      console.log(_);
-      return (
-        <Space size="middle">
-          <span>{_?.[0]?.Course?.coursename}</span>
-        </Space>
-      );
+export const studentsViewColumn: any = (studentData: any) => {
+  return [
+    {
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+      render: (text: any) => <a>{text}</a>,
     },
-  },
-  {
-    title: "adviser",
-    dataIndex: "adviser",
-    key: "adviser",
-  },
 
-  {
-    title: "images",
-    key: "image",
-    render: (_) => {
-      console.log(_);
-      return (
-        <Space size="middle">
-          <Image
-            src={_.Students?.[0]?.image}
-            alt="sgerf"
-            width={50}
-            height={50}
-          />
-        </Space>
-      );
+    {
+      title: "Course",
+      dataIndex: "Students",
+      key: "course",
+      render: (_: any, record: any) => {
+        console.log("WWWWWw", _);
+
+        return (
+          <Space size="middle">
+            <span>{_?.[0]?.Course?.coursename}</span>
+          </Space>
+        );
+      },
     },
-  },
+    {
+      title: "adviser",
+      dataIndex: "adviser",
+      key: "adviser",
+    },
 
-  {
-    title: "Action",
-    key: "action",
-    render: (_, record) => (
-      <Button
-        href={_.url}
-        size="middle"
-        className=" flex w-fit flex-row gap-2  rounded bg-blue-300 px-4"
-      >
-        <BsDownload />
-        <a> Dowload </a>
-      </Button>
-    ),
-  },
-];
+    {
+      title: "published date",
+      dataIndex: "date",
+      key: "date",
+    },
+
+    {
+      title: "Action",
+      key: "action",
+      render: (_: any, record: any) => (
+        <Button
+          href={_.url}
+          size="middle"
+          className="flex w-fit flex-row gap-2 rounded bg-blue-300 px-4"
+          disabled={!studentData.status} // Disable the button when status is false
+        >
+          {studentData.status ? (
+            // If status is true, show the download icon and text
+            <>
+              <div className=" flex gap-3">
+                {" "}
+                <BsDownload />
+                <p> Download </p>
+              </div>
+            </>
+          ) : (
+            // If status is false, show the not verified text
+            <span className="  text-red-400"> Not Verified Student</span>
+          )}
+        </Button>
+      ),
+    },
+  ];
+};

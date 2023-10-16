@@ -18,10 +18,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     router.push(route);
   };
 
+  let id: any = null;
+  if (typeof window !== "undefined") {
+    id = localStorage.getItem("username");
+  }
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider className="flex min-h-screen border-r-2  border-solid  border-yellow-100 shadow-lg">
-        <div className="flex min-h-screen   flex-col bg-[#fff9b5] p-5 pt-0">
+      <Sider className="flex   min-h-screen  border-r-2 border-solid  shadow-lg">
+        <div
+          style={{ width: "200px" }}
+          className="flex min-h-screen    flex-col bg-[#fff9b5] p-5 pt-0"
+        >
           <div className=" mt-3 flex items-center   gap-1">
             {" "}
             <img className="  my-4 h-14  w-16 " src="/ccis-logo.png " />{" "}
@@ -30,7 +38,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <div className=" mt-10 flex  flex-col gap-2  ">
             <div
               onClick={() => changeRoute("/capstone")}
-              className={`${
+              className={` ${id == "admin" ? "hidden" : ""} ${
                 path === "/capstone" ? " bg-[#ffee36] " : " bg-[#fff9b5] "
               }  rounded p-1       text-xl      font-bold  hover:brightness-90     `}
             >
@@ -40,7 +48,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             {/* <div  onClick={()=>changeRoute("/thesisList")} className={`${path === "/thesisList"?  ' bg-[#ffee36] ':" bg-[#fff9b5] "}  font-bold text-xl       p-1      hover:brightness-90  rounded     `} >Thesis List</div> */}
             <div
               onClick={() => changeRoute("/accountSettings")}
-              className={`${
+              className={` ${id == "admin" ? "hidden" : ""} ${
                 path === "/accountSettings"
                   ? " bg-[#ffee36] "
                   : " bg-[#fff9b5] "
@@ -50,7 +58,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </div>{" "}
             <div
               onClick={() => changeRoute("/admin/capstone")}
-              className={`${
+              className={` ${id !== "admin" ? "hidden" : ""}  ${
                 path === "/admin/capstone" ? " bg-[#ffee36] " : " bg-[#fff9b5] "
               }  rounded p-1       text-xl      font-bold  hover:brightness-90     `}
             >
@@ -58,12 +66,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </div>{" "}
             <div
               onClick={() => changeRoute("/admin/students")}
-              className={`${
-                path === "/admin/students" ? " bg-[#ffee36] " : " bg-[#fff9b5] "
-              }  rounded p-1       text-xl      font-bold  hover:brightness-90     `}
+              className={` ${id !== "admin" ? "hidden" : ""} ${
+                path === "/admin/students" ? "bg-[#ffee36]" : "bg-[#fff9b5]"
+              } rounded p-1 text-xl font-bold hover:brightness-90`}
             >
               Students
-            </div>{" "}
+            </div>
           </div>
         </div>
       </Sider>

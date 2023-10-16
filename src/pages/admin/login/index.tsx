@@ -9,33 +9,27 @@ import { BsWindowSidebar } from "react-icons/bs";
 
 export default function AdminLogin() {
   const router = useRouter();
-  const [form] = Form.useForm()
+  const [form] = Form.useForm();
 
-
-  const {mutate} = api.example.loginAdmin.useMutation({
-    onSuccess:(data)=>{
-
-
+  const { mutate } = api.example.loginAdmin.useMutation({
+    onSuccess: (data) => {
       if (data) {
-        localStorage.setItem('username', data.username);
-        localStorage.setItem('id', data.id);
-        
-  
-        router.push("/admin/capstone");
-      }
-      else{
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("id", data.id);
 
-        alert("Invalid Credentials")
-        
+        router.push("/admin/capstone");
+      } else {
+        alert("Invalid Credentials");
       }
-  }})
+    },
+  });
 
   const onFinish = (values: any) => {
-    console.log("Received values of form: ", values);
-    mutate({username:form.getFieldValue("username"),password:form.getFieldValue("password") })
+    mutate({
+      username: form.getFieldValue("username"),
+      password: form.getFieldValue("password"),
+    });
   };
-
-
 
   return (
     <>

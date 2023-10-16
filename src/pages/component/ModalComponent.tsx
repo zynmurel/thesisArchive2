@@ -64,7 +64,6 @@ const ModalComponent = ({
     onSuccess: () => {
       handleCancel;
       refetchStudent();
-      console.log("domeoesgg");
     },
   });
 
@@ -73,8 +72,6 @@ const ModalComponent = ({
     form.setFieldsValue({
       courseId: studentData?.Course?.coursename,
     });
-
-    console.log("1233", studentData?.Course?.coursename);
 
     setImageUrl(studentData?.image || "");
   }, [studentData]);
@@ -153,12 +150,17 @@ const ModalComponent = ({
             maxCount={1}
             className=" mt-6 flex   flex-row bg-orange-200 "
             beforeUpload={(file) => {
-              const isPNG = file.type === "image/png";
-
-              if (!isPNG) {
-                message.error(`${file.name} is not a png file`);
+              const isImage =
+                file.type === "image/png" ||
+                file.type === "image/jpeg" ||
+                file.type === "image/jpg" ||
+                file.type === "image/jfif";
+              if (!isImage) {
+                message.error(
+                  `${file.name} is not a valid image file (png, jpeg, jpg, or jfif)`,
+                );
               }
-              return isPNG || Upload.LIST_IGNORE;
+              return isImage ? true : Upload.LIST_IGNORE;
             }}
             onChange={handleChanges}
           >

@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "mysql"
+    url      = env("DATABASE_URL")
 }
 
 model Example {
@@ -33,17 +33,20 @@ model Course {
 }
 
 model Capstone {
+    studentCourse String
     id            String     @id @default(cuid())
     title        String
     abstract      String
     topic         String
     adviser       String
     url           String
+    date          String
     studentMembers       String
     status        String
     createdAt     DateTime   @default(now())
     updatedAt     DateTime   @updatedAt
     Students      Students[]
+   
 }
 
 model Students {
@@ -55,7 +58,7 @@ model Students {
     address    String
     gender     String
     studentNo  String   @unique
-    image      String? 
+    image     String?  @db.LongText
     status     Boolean   @default(false)
     courseId   String?
     Course     Course?   @relation(fields: [courseId], references: [id])

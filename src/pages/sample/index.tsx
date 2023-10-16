@@ -9,9 +9,7 @@ const FileUploadComponent = () => {
     setFile(selectedFile);
   };
 
-  useEffect(() => {
-    console.log(base64String);
-  }, [base64String]);
+  useEffect(() => {}, [base64String]);
 
   const handleConvertToBase64 = () => {
     if (file) {

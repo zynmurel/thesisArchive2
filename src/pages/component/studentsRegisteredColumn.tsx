@@ -22,17 +22,37 @@ interface DataType {
 
 export const studentsRegisteredColumn: ColumnsType<any> = [
   {
-    title: "firstname",
-    dataIndex: "firstname",
-    key: "firstname",
+    title: "student No.",
+    key: "studentNo",
+    render: (_: any, record: any) => {
+      return (
+        <div>
+          {" "}
+          <p className=" bg-red">{_.studentNo}</p>
+        </div>
+      );
+    },
+  },
+  {
+    title: "      StudentName",
+    key: "name",
+    render: (_: any, record: any) => {
+      console.log("123", _);
+      return (
+        <div>
+          {" "}
+          <p className=" bg-red">
+            {_.firstname} {_.lastname}
+          </p>
+        </div>
+      );
+    },
   },
 
   {
     title: "course",
     key: "course",
     render: (_, record) => {
-      console.log("RECORD", record);
-
       return (
         <Space size="middle">
           <p> {_.Course?.coursename} </p>

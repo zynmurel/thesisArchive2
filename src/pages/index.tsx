@@ -25,7 +25,6 @@ export default function Home() {
   });
 
   const onFinish = (values: any) => {
-    console.log("Received values of form: ", values);
     mutate({
       username: form.getFieldValue("username"),
       password: form.getFieldValue("password"),
@@ -35,13 +34,11 @@ export default function Home() {
   useEffect(() => {
     if (localStorage.getItem("username")) {
       router.push("/capstone");
-      console.log("some");
     }
   });
 
   return (
     <>
-      <App />
       <div className=" flex h-screen w-full flex-col items-center justify-center    bg-green-50  ">
         <p className="   pb-6  font-bold  text-gray-600 ">
           {" "}
@@ -65,7 +62,10 @@ export default function Home() {
                 <Form.Item
                   name="username"
                   rules={[
-                    { required: true, message: "Please input your Username!" },
+                    {
+                      required: true,
+                      message: "Please input your student ID!",
+                    },
                   ]}
                   className=" items-center"
                 >

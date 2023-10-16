@@ -61,9 +61,12 @@ export default function Home() {
   const { mutate } = api.example.signupStudent.useMutation({
     onSuccess: () => {
       form.resetFields();
-      console.log("some");
+      window.alert("Succesfully Registered");
+      router.push("/");
     },
   });
+
+  const { data: courseData } = api.example.courseData.useQuery();
 
   const onFinish = (values: StudentType) => {
     console.log(values);
@@ -83,9 +86,7 @@ export default function Home() {
     console.log("radio checked", e.target.value);
     setValue(e.target.value);
   };
-  const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
-  };
+  const handleChange = (value: string) => {};
 
   const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -119,7 +120,6 @@ export default function Home() {
     },
     // onChange: {handleChange}
   };
-  console.log(imageUrl);
   return (
     <>
       <div className=" flex h-screen w-full flex-col items-center justify-center   bg-green-50  ">
@@ -260,36 +260,23 @@ export default function Home() {
                   ]}
                   className=" items-center"
                 >
-                  <Select
-                    className=" flex h-8  min-w-full  text-center"
-                    defaultValue="Choose Your Course"
-                    style={{ width: 200 }}
-                    onChange={handleChange}
-                    options={[
-                      {
-                        label: "List Of Course",
-                        options: [
-                          {
-                            label: "Bachelor Science in Information Technology",
-                            value: "clnlf94e10001mwkinbhz3gzq",
-                          },
-                          {
-                            label: "Bachelor Science in Computer  Science",
-                            value: "clnlfa8hz0002mwkibgzcd6a9",
-                          },
-                          {
-                            label: "Bachelor Science in Information  System",
-                            value: "clnlf85st0000mwkimbhrtgjh",
-                          },
-                          {
-                            label:
-                              "Bachelor of Science in Entertainment and Multimedia Computing",
-                            value: "clnlfbhye0003mwkivh5l1960",
-                          },
-                        ],
-                      },
-                    ]}
-                  />
+                  {courseData && (
+                    <Select
+                      className="flex h-8 min-w-full text-center"
+                      defaultValue="Choose Your Course"
+                      style={{ width: 200 }}
+                      onChange={handleChange}
+                      options={[
+                        {
+                          label: "List Of Course",
+                          options: courseData.map((data: any) => ({
+                            label: data.coursename,
+                            value: data.id,
+                          })),
+                        },
+                      ]}
+                    />
+                  )}
                 </Form.Item>
 
                 <Form.Item
@@ -300,17 +287,24 @@ export default function Home() {
                   className=" w-full  items-center"
                 >
                   <Upload
-                    className=" flex flex-row  bg-orange-200 "
+                    className="flex flex-row bg-orange-200"
                     beforeUpload={(file) => {
-                      const isPNG = file.type === "image/png";
-                      if (!isPNG) {
-                        message.error(`${file.name} is not a png file`);
+                      const isImage =
+                        file.type === "image/png" ||
+                        file.type === "image/jpeg" ||
+                        file.type === "image/jpg" ||
+                        file.type === "image/jfif";
+                      if (!isImage) {
+                        message.error(
+                          `${file.name} is not a valid image file (png, jpeg, jpg, or jfif)`,
+                        );
                       }
-                      return isPNG || Upload.LIST_IGNORE;
+                      return isImage ? true : Upload.LIST_IGNORE;
                     }}
+                    maxCount={1}
                     onChange={handleChanges}
                   >
-                    <Button icon={<UploadOutlined />}>Upload png only</Button>
+                    <Button icon={<UploadOutlined />}>Upload Images</Button>
                   </Upload>
                 </Form.Item>
 

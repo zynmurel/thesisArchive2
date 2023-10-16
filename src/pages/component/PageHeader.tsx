@@ -4,13 +4,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React, { useEffect, useState } from "react";
-import { Dropdown, Space } from "antd";
+import { Dropdown, Image, Space } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 
-const PageHeader = ({ showModal, studentData }: any) => {
+const PageHeader = ({ showModal }: any) => {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -18,6 +18,10 @@ const PageHeader = ({ showModal, studentData }: any) => {
   if (typeof window !== "undefined") {
     id = localStorage.getItem("id");
   }
+
+  const { data: studentData, refetch } = api.example.studentDetails.useQuery({
+    id: id,
+  });
 
   const removeStorage = () => {
     localStorage.clear();
@@ -34,9 +38,8 @@ const PageHeader = ({ showModal, studentData }: any) => {
       label: <button onClick={removeStorage}>Logout</button>,
     },
   ];
-  console.log(studentData);
   return (
-    <div className="h-15 mb-6 flex w-full items-center justify-between border border-solid border-gray-500 px-10">
+    <div className="h-15 mb-6 flex w-full items-center justify-between  bg-gray-300 px-10">
       <h1 className="ml-36 font-mono text-3xl font-bold text-gray-500">
         {router.pathname.replace(/\//g, " ")}
       </h1>
@@ -46,8 +49,8 @@ const PageHeader = ({ showModal, studentData }: any) => {
           <Space>
             <div className="flex flex-row items-center justify-center gap-4">
               <img
-                src={studentData?.image ?? ""}
-                className="h-12 w-12"
+                src={studentData?.image || ""}
+                className="h-6 w-6 rounded-2xl"
                 alt="logo"
               />
               <h1 className="font-mono text-xl font-bold text-gray-500">

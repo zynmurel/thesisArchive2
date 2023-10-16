@@ -8,7 +8,18 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "~/pages/component/DashboardLayout";
 import PageHeader from "~/pages/component/PageHeader";
-import { Card, Input, Table, Modal, Form, Button, Upload, message } from "antd";
+import {
+  Card,
+  Input,
+  Table,
+  Modal,
+  Form,
+  Button,
+  Upload,
+  message,
+  DatePicker,
+  Select,
+} from "antd";
 import { BiSolidAddToQueue } from "react-icons/bi";
 import { useRouter } from "next/router";
 import { DataType } from "~/pages/dataType/types";
@@ -21,6 +32,8 @@ import App from "~/pages/sampleUpload";
 import { storage } from "~/config/firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
+import dayjs from "dayjs";
+import PageHeaderAdmin from "~/pages/component/pageHeaderAdmin";
 
 const { Search } = Input;
 
@@ -35,73 +48,40 @@ const tabList = [
   },
 ];
 
-const approvalCapstoneData: DataType[] = [
-  {
-    key: "1",
-    title: "John Brown",
-    date: "3/23/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-  {
-    key: "1",
-    title: "John Brown",
-    date: "3/23/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-  {
-    key: "1",
-    title: "John Brown",
-    date: "3/23/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-];
-
-const managementCapstoneData: DataType[] = [
-  {
-    key: "1",
-    title: "John Brown",
-    date: "3/23/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-  {
-    key: "1",
-    title: "John Brown",
-    date: "3/23/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-  {
-    key: "1",
-    title: "John Brown",
-    date: "3/23/2018",
-    adviser: "Ervin rodriguez",
-    course: "CCIS",
-    images: "/ccis-logo.png",
-  },
-];
-
 function AdminCapstone() {
   const [form] = Form.useForm();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [capstoneData, setCapstoneData] = useState<string>();
+  const [pickerDate, setPickerDate] = useState<any>("");
+  const { data: courseData } = api.example.courseData.useQuery();
+
+  const [approvalModal, setApproveModal] = useState(false);
+
   const [activeTabKey1, setActiveTabKey1] = useState<string>("tab1");
-  const { data } = api.example.notApprovedStudents.useQuery();
+  const { data, refetch } = api.capstone.notApprovedCapstoneDetails.useQuery();
+
+  const { data: approveData, refetch: refetchApprovedCapstone } =
+    api.capstone.ApprovedCapstoneDetails.useQuery();
+  const { mutate: mutateApprovalCapstone } =
+    api.capstone.approveCapstone.useMutation({
+      onSuccess: () => {
+        refetch();
+        refetchApprovedCapstone();
+      },
+    });
+
   const [modalCapstone, setModalCapstone] = useState(false);
   const [imageUpload, setImageUpload] = useState<any>(null);
 
   const adminCapstonTab: Record<string, React.ReactNode> = {
     tab1: (
       <div className="  flex  w-full flex-nowrap">
-        <Table className=" w-full" dataSource={data}></Table>
+        <Table
+          className=" w-full"
+          columns={capstoneApprovalColumn(setApproveModal, setCapstoneData)}
+          dataSource={data}
+        ></Table>
       </div>
     ),
     tab2: (
@@ -109,7 +89,7 @@ function AdminCapstone() {
         <Table
           className=" w-full"
           columns={capstoneManagementColumn}
-          dataSource={managementCapstoneData}
+          dataSource={approveData}
         ></Table>
       </div>
     ),
@@ -128,23 +108,39 @@ function AdminCapstone() {
   const capstoneModalCancel = () => {
     setModalCapstone(false);
   };
-  const { mutate } = api.capstone.createCapstone.useMutation({
+
+  const approvalModalOkay = (values: any) => {
+    mutateApprovalCapstone({
+      id: capstoneData ?? "",
+    });
+
+    setApproveModal(false);
+  };
+
+  const approvalModalCancel = () => {
+    setApproveModal(false);
+    setCapstoneData(undefined);
+  };
+  const { mutate } = api.capstone.createAdminCapstone.useMutation({
     onSuccess: (data) => {
-      console.log(data);
       if (!data) {
         form.setFields([
           {
             name: "capstoneLeader",
-            errors: ["Student Id not Found"],
+            errors: ["Student not Registered or Already submitted a Capstone"],
           },
         ]);
       } else {
         form.resetFields();
         setModalCapstone(false);
       }
+      refetch();
+      refetchApprovedCapstone();
     },
   });
   const uploadImage = (e: any) => {
+    console.log("VAAALUES", e.date);
+
     if (!imageUpload) {
       form.setFields([
         {
@@ -156,14 +152,17 @@ function AdminCapstone() {
       const imageRef = ref(storage, `files/${imageUpload.name + v4()}`);
       uploadBytes(imageRef, imageUpload).then((data: any) => {
         getDownloadURL(data.ref).then((d) => {
+          const course = courseData?.find((data) => data.id === e.course);
           mutate({
+            studentNo: e.capstoneLeader,
+            course: course?.coursename || "",
+            studentMembers: e.studentMembers,
             title: e.title,
-            abstract: e.abstract,
             topic: e.topic,
+            abstract: e.abstract,
             adviser: e.adviser,
             url: d,
-            studentMembers: e.studentMembers,
-            studentNo: e.capstoneLeader,
+            date: pickerDate,
           });
         });
       });
@@ -208,15 +207,28 @@ function AdminCapstone() {
     }
   });
 
+  const handleDateChange = (date: any, dateString: any) => {
+    const formattedDate = dayjs(dateString).format("MM/DD/YYYY");
+    setPickerDate(formattedDate);
+  };
+
   return (
     <DashboardLayout>
+      <Modal
+        title="Basic Modal"
+        open={approvalModal}
+        onOk={approvalModalOkay}
+        onCancel={approvalModalCancel}
+      >
+        Are you sure you want to approve this capstone?
+      </Modal>
       <Modal
         title="ADD CAPSTONE"
         open={modalCapstone}
         onOk={capstoneModalOk}
         onCancel={capstoneModalCancel}
         centered
-        width={400}
+        width={600}
         footer={[]}
       >
         <Form
@@ -251,6 +263,29 @@ function AdminCapstone() {
           </Form.Item>
 
           <Form.Item
+            name="course"
+            rules={[{ required: true, message: "Please Choose Course" }]}
+            className=" items-center"
+          >
+            {courseData && (
+              <Select
+                className="flex h-8 min-w-full text-center"
+                defaultValue="Choose Your Course"
+                style={{ width: 200 }}
+                options={[
+                  {
+                    label: "List Of Course",
+                    options: courseData.map((data) => ({
+                      label: data.coursename,
+                      value: data.id,
+                    })),
+                  },
+                ]}
+              />
+            )}
+          </Form.Item>
+
+          <Form.Item
             name="title"
             rules={[
               {
@@ -282,6 +317,14 @@ function AdminCapstone() {
           >
             <Input placeholder=" Abstract" />
           </Form.Item>
+
+          <Form.Item
+            name="date"
+            rules={[{ required: true, message: "Please  Select date  " }]}
+            label="Date of Submission"
+          >
+            <DatePicker onChange={handleDateChange} />
+          </Form.Item>
           <App
             imageUpload={imageUpload}
             setImageUpload={setImageUpload}
@@ -298,7 +341,7 @@ function AdminCapstone() {
           </Form.Item>
         </Form>
       </Modal>
-      <PageHeader showModal={showModal} />
+      <PageHeaderAdmin />
       <div className="  mb-14 flex  justify-between ">
         <div>
           <Search

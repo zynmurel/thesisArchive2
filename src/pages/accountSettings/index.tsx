@@ -38,7 +38,7 @@ export default function Home() {
   const { data: studentData } = api.example.studentDetails.useQuery({ id: id });
   const { mutate } = api.example.editPassword.useMutation({
     onSuccess: () => {
-      console.log(hello);
+      window.alert("Succesfully changed");
     },
   });
 
@@ -58,7 +58,7 @@ export default function Home() {
       mutate({
         id: studentData?.id || "",
 
-        password: values.currentPassword,
+        password: values.newPassword,
       });
 
       form.resetFields();
@@ -71,7 +71,6 @@ export default function Home() {
   };
 
   const courseChange = (e: RadioChangeEvent) => {
-    console.log("radio checked", e.target.value);
     setCourse(e.target.value);
   };
   const handleChange = (e: RadioChangeEvent) => {
@@ -123,8 +122,9 @@ export default function Home() {
                     className=" items-center"
                   >
                     <input
+                      type="password"
                       className=" flex h-8  w-full border-2   border-gray-400 text-center"
-                      placeholder="Username"
+                      placeholder="Current Password"
                     />
                   </Form.Item>
                   <Form.Item

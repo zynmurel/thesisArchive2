@@ -6,29 +6,37 @@ import type { ColumnsType } from "antd/es/table";
 import { BsDownload } from "react-icons/bs";
 import { BsCheckCircleFill } from "react-icons/bs";
 
-interface DataType {
-  key: string;
-  firstName: string;
-  lastName: string;
-  username: string;
-  password: string;
-  email: string;
-  gender: string;
-  studentNo: string;
-  image: string;
-  address: string;
-}
-
-export const studentsApprovalColumn = (
+export const studentsApprovalColumn: any = (
   setOpenModal: any,
   setStudentsData: any,
 ) => {
   return [
     {
-      title: "Name",
-      dataIndex: "firstname",
+      title: "student No.",
+      key: "studentNo",
+      render: (_: any, record: any) => {
+        return (
+          <div>
+            {" "}
+            <p className=" bg-red">{_.studentNo}</p>
+          </div>
+        );
+      },
+    },
+    {
+      title: "      StudentName",
       key: "name",
-      render: (text: any) => <a>{text}</a>,
+      render: (_: any, record: any) => {
+        console.log("123", _);
+        return (
+          <div>
+            {" "}
+            <p className=" bg-red">
+              {_.firstname} {_.lastname}
+            </p>
+          </div>
+        );
+      },
     },
     {
       title: "course",

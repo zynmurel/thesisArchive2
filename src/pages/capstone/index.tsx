@@ -27,7 +27,7 @@ import { Input } from "antd";
 import { BiSolidAddToQueue } from "react-icons/bi";
 import { UploadOutlined } from "@ant-design/icons";
 import PageHeader from "../component/PageHeader";
-import { studentViewColumns } from "../component/studentViewColumns";
+import { studentsViewColumn } from "../component/studentViewColumns";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
@@ -46,9 +46,8 @@ function Capstone() {
     id: id,
   });
 
-  const { data: approvedCapstone } = api.capstone.approvedCapstone.useQuery();
-  console.log("asfafaf", approvedCapstone);
-
+  const { data: approvedCapstone } =
+    api.capstone.ApprovedCapstoneDetails.useQuery();
   const [imageUpload, setImageUpload] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalCapstone, setModalCapstone] = useState(false);
@@ -97,7 +96,8 @@ function Capstone() {
     console.log("Failed:", errorInfo);
   };
   useEffect(() => {
-    console.log("useE");
+    form.setFieldValue("capstoneLeader", studentData?.studentNo);
+    form.setFieldValue("studentCourse", studentData?.Course?.coursename);
 
     if (typeof window !== "undefined" && !localStorage.getItem("username")) {
       router.push("/");
@@ -139,6 +139,7 @@ function Capstone() {
       uploadBytes(imageRef, imageUpload).then((data: any) => {
         getDownloadURL(data.ref).then((d) => {
           mutate({
+            studentCourse: e.studentCourse,
             title: e.title,
             abstract: e.abstract,
             topic: e.topic,
@@ -168,7 +169,7 @@ function Capstone() {
           onOk={capstoneModalOk}
           onCancel={capstoneModalCancel}
           centered
-          width={400}
+          width={600}
           footer={[]}
         >
           <Form
@@ -186,8 +187,22 @@ function Capstone() {
                   message: " Input  student leader",
                 },
               ]}
+              className="bg-gray-200"
             >
-              <Input placeholder="student Leader" />
+              <Input placeholder="student Leader" disabled />
+            </Form.Item>
+
+            <Form.Item
+              name="studentCourse"
+              rules={[
+                {
+                  required: true,
+                  message: " Input  student Course",
+                },
+              ]}
+              className="bg-gray-200"
+            >
+              <Input placeholder="student Leader" disabled />
             </Form.Item>
 
             <Form.Item
@@ -266,26 +281,51 @@ function Capstone() {
               />
             </div>
 
-            <div
-              onClick={showCapstoneModal}
-              className="bg flex cursor-pointer items-center justify-center gap-3 rounded border border-solid border-gray-500 bg-[#ece7a2] p-2"
-            >
-              <div></div>
-              <p className="font-extrabold">ADD CAPSTONE</p>
-              <BiSolidAddToQueue className="h-6 w-6" />
-            </div>
+            {studentData?.capstone ? (
+              studentData.capstone.status === "approved" ? (
+                <button
+                  onClick={showCapstoneModal}
+                  disabled
+                  className="bg flex cursor-pointer items-center justify-center gap-3 rounded border border-solid border-gray-500 bg-[#ece7a2] p-2"
+                >
+                  <p className="font-extrabold">Capstone Approved</p>
+                </button>
+              ) : (
+                <button
+                  onClick={showCapstoneModal}
+                  disabled
+                  className="bg flex cursor-pointer items-center justify-center gap-3 rounded border border-solid border-gray-500 bg-[#ece7a2] p-2"
+                >
+                  <p className="font-extrabold">Added Capstone is Pending</p>
+                </button>
+              )
+            ) : studentData?.status ? (
+              <button
+                onClick={showCapstoneModal}
+                className="bg flex cursor-pointer items-center justify-center gap-3 rounded border border-solid border-gray-500 bg-[#ece7a2] p-2"
+              >
+                <p className="font-extrabold">ADD CAPSTONE</p>
+                <BiSolidAddToQueue className="h-6 w-6" />
+              </button>
+            ) : (
+              <button
+                onClick={showCapstoneModal}
+                disabled
+                className="bg flex cursor-pointer items-center justify-center gap-3 rounded border border-solid border-gray-500 bg-gray-200 p-2"
+              >
+                <p className="font-extrabold">Student not Approved</p>
+                <BiSolidAddToQueue className="h-6 w-6" />
+              </button>
+            )}
           </div>
 
           <Table
-            columns={studentViewColumns}
+            columns={studentsViewColumn(studentData)}
             dataSource={approvedCapstone?.filter(
               (item: any) =>
                 item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
                 item.date.toLowerCase().includes(searchValue.toLowerCase()) ||
-                item.adviser
-                  .toLowerCase()
-                  .includes(searchValue.toLowerCase()) ||
-                item.course.toLowerCase().includes(searchValue.toLowerCase()),
+                item.adviser.toLowerCase().includes(searchValue.toLowerCase()),
             )}
           />
         </div>

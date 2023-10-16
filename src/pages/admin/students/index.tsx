@@ -29,6 +29,7 @@ import type { UploadChangeParam } from "antd/es/upload";
 
 import { api } from "~/utils/api";
 import { useRouter } from "next/navigation";
+import PageHeaderAdmin from "~/pages/component/pageHeaderAdmin";
 
 const { Search } = Input;
 
@@ -81,11 +82,13 @@ function AdminCapstone() {
   const [activeTabKey1, setActiveTabKey1] = useState<string>("tab1");
   const { data: notApproved, refetch } =
     api.example.notApprovedStudents.useQuery();
-  const { data: approved } = api.example.approvedStudents.useQuery();
+  const { data: approved, refetch: refetchApproved } =
+    api.example.approvedStudents.useQuery();
   const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>("");
+  const { data: courseData } = api.example.courseData.useQuery();
 
   const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -95,13 +98,13 @@ function AdminCapstone() {
 
   const { mutate } = api.example.verifyStudents.useMutation({
     onSuccess: () => {
-      return refetch();
+      return refetch(), refetchApproved();
     },
   });
-  const { mutate: mutateStudent } = api.example.signupStudent.useMutation({
+  const { mutate: mutateStudent } = api.example.signupStudentAdmin.useMutation({
     onSuccess: () => {
       form.resetFields();
-      console.log("some");
+      return refetch(), refetchApproved();
     },
   });
 
@@ -131,10 +134,11 @@ function AdminCapstone() {
             (item) =>
               item.firstname
                 .toLowerCase()
-                .includes(searchValue.toLowerCase()) ??
+                .includes(searchValue.toLowerCase()) ||
               item.Course?.coursename
                 .toLowerCase()
-                .includes(searchValue.toLowerCase()),
+                .includes(searchValue.toLowerCase()) ||
+              item.studentNo.toLowerCase().includes(searchValue.toLowerCase()),
           )}
         ></Table>
       </div>
@@ -151,7 +155,8 @@ function AdminCapstone() {
                 .includes(searchValue.toLowerCase()) ||
               item.Course?.coursename
                 .toLowerCase()
-                .includes(searchValue.toLowerCase()),
+                .includes(searchValue.toLowerCase()) ||
+              item.studentNo.toLowerCase().includes(searchValue.toLowerCase()),
           )}
         ></Table>
       </div>
@@ -167,8 +172,6 @@ function AdminCapstone() {
   };
 
   const addStudent = (values: any) => {
-    console.log("WWWWWWWW", values);
-
     mutateStudent({
       firstName: values.firstName,
       lastName: values.lastName,
@@ -355,39 +358,26 @@ function AdminCapstone() {
             </div>
             <Form.Item
               name="course"
-              rules={[{ required: true, message: "Please input Password!" }]}
+              rules={[{ required: true, message: "Please Choose Course" }]}
               className=" items-center"
             >
-              <Select
-                className=" flex h-8  min-w-full  text-center"
-                defaultValue="Choose  Course"
-                style={{ width: 200 }}
-                onChange={handleChange}
-                options={[
-                  {
-                    label: "List Of Course",
-                    options: [
-                      {
-                        label: "Bachelor Science in Information Technology",
-                        value: "clnlf94e10001mwkinbhz3gzq",
-                      },
-                      {
-                        label: "Bachelor Science in Computer  Science",
-                        value: "clnlfa8hz0002mwkibgzcd6a9",
-                      },
-                      {
-                        label: "Bachelor Science in Information  System",
-                        value: "clnlf85st0000mwkimbhrtgjh",
-                      },
-                      {
-                        label:
-                          "Bachelor of Science in Entertainment and Multimedia Computing",
-                        value: "clnlfbhye0003mwkivh5l1960",
-                      },
-                    ],
-                  },
-                ]}
-              />
+              {courseData && (
+                <Select
+                  className="flex h-8 min-w-full text-center"
+                  defaultValue="Choose Your Course"
+                  style={{ width: 200 }}
+                  onChange={handleChange}
+                  options={[
+                    {
+                      label: "List Of Course",
+                      options: courseData.map((data) => ({
+                        label: data.coursename,
+                        value: data.id,
+                      })),
+                    },
+                  ]}
+                />
+              )}
             </Form.Item>
             <Form.Item
               name="image"
@@ -397,12 +387,19 @@ function AdminCapstone() {
               <Upload
                 className=" flex w-fit   flex-row  bg-orange-200 "
                 beforeUpload={(file) => {
-                  const isPNG = file.type === "image/png";
-                  if (!isPNG) {
-                    message.error(`${file.name} is not a png file`);
+                  const isImage =
+                    file.type === "image/png" ||
+                    file.type === "image/jpeg" ||
+                    file.type === "image/jpg" ||
+                    file.type === "image/jfif";
+                  if (!isImage) {
+                    message.error(
+                      `${file.name} is not a valid image file (png, jpeg, jpg, or jfif)`,
+                    );
                   }
-                  return isPNG || Upload.LIST_IGNORE;
+                  return isImage ? true : Upload.LIST_IGNORE;
                 }}
+                maxCount={1}
                 onChange={handleChanges}
               >
                 <Button icon={<UploadOutlined />}>Upload png only</Button>
@@ -425,7 +422,7 @@ function AdminCapstone() {
           </Form>
         </div>{" "}
       </Modal>
-      <PageHeader showModal={showModal} />
+      <PageHeaderAdmin />
       <div className="  mb-14 flex  justify-between ">
         <div>
           <Search
