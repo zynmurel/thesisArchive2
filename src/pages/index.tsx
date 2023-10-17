@@ -93,8 +93,7 @@ export default function Home() {
                       className="      p-4 py-1"
                       style={{ backgroundColor: "#7AC8AE" }}
                     >
-                      {" "}
-                      Login{" "}
+                      Login
                     </button>
                     <button
                       className="       p-4 py-1"
@@ -103,8 +102,7 @@ export default function Home() {
                         router.push("/signup");
                       }}
                     >
-                      {" "}
-                      Signup{" "}
+                      Signup
                     </button>
                   </div>
                 </Form.Item>

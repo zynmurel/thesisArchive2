@@ -52,7 +52,7 @@ export const studentsRegisteredColumn: ColumnsType<any> = [
   {
     title: "course",
     key: "course",
-    render: (_, record) => {
+    render: (_: any, record: any) => {
       return (
         <Space size="middle">
           <p> {_.Course?.coursename} </p>

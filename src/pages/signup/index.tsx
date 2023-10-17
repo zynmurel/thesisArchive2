@@ -59,10 +59,14 @@ export default function Home() {
   const [imageUrl, setImageUrl] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { mutate } = api.example.signupStudent.useMutation({
-    onSuccess: () => {
-      form.resetFields();
-      window.alert("Succesfully Registered");
-      router.push("/");
+    onSuccess: (data) => {
+      if (data && data.success) {
+        form.resetFields();
+        window.alert("Successfully Registered");
+        router.push("/");
+      } else {
+        console.log("awawawawwawawa");
+      }
     },
   });
 

@@ -14,9 +14,17 @@ export const capstoneManagementColumn: ColumnsType<any> = [
 
   {
     title: "Course",
-    dataIndex: "studentCourse",
+    dataIndex: "Students",
     key: "course",
-    render: (text) => <a>{text}</a>,
+    render: (_: any, record: any) => {
+      console.log("WWWWWw", _);
+
+      return (
+        <Space size="middle">
+          <span>{_?.[0]?.Course?.coursename}</span>
+        </Space>
+      );
+    },
   },
 
   {

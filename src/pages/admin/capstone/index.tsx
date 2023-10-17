@@ -54,6 +54,8 @@ function AdminCapstone() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [capstoneData, setCapstoneData] = useState<string>();
   const [pickerDate, setPickerDate] = useState<any>("");
+  const [searchValue, setSearchValue] = useState("");
+
   const { data: courseData } = api.example.courseData.useQuery();
 
   const [approvalModal, setApproveModal] = useState(false);
@@ -80,7 +82,17 @@ function AdminCapstone() {
         <Table
           className=" w-full"
           columns={capstoneApprovalColumn(setApproveModal, setCapstoneData)}
-          dataSource={data}
+          dataSource={data?.filter((item: any) => {
+            console.log(item?.Students?.[0]?.Course?.coursename.toLowerCase());
+            return (
+              item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+              item.date.toLowerCase().includes(searchValue.toLowerCase()) ||
+              item.adviser.toLowerCase().includes(searchValue.toLowerCase()) ||
+              item?.Students?.[0]?.Course?.coursename
+                .toLowerCase()
+                .includes(searchValue.toLowerCase())
+            );
+          })}
         ></Table>
       </div>
     ),
@@ -89,7 +101,17 @@ function AdminCapstone() {
         <Table
           className=" w-full"
           columns={capstoneManagementColumn}
-          dataSource={approveData}
+          dataSource={approveData?.filter((item: any) => {
+            console.log(item?.Students?.[0]?.Course?.coursename.toLowerCase());
+            return (
+              item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+              item.date.toLowerCase().includes(searchValue.toLowerCase()) ||
+              item.adviser.toLowerCase().includes(searchValue.toLowerCase()) ||
+              item?.Students?.[0]?.Course?.coursename
+                .toLowerCase()
+                .includes(searchValue.toLowerCase())
+            );
+          })}
         ></Table>
       </div>
     ),
@@ -121,9 +143,14 @@ function AdminCapstone() {
     setApproveModal(false);
     setCapstoneData(undefined);
   };
+  const handleSearchChange = (e: any) => {
+    setSearchValue(e.target.value);
+  };
   const { mutate } = api.capstone.createAdminCapstone.useMutation({
     onSuccess: (data) => {
       if (!data) {
+        window.alert("Student not Registered or Already submitted a Capstone");
+
         form.setFields([
           {
             name: "capstoneLeader",
@@ -219,6 +246,16 @@ function AdminCapstone() {
         open={approvalModal}
         onOk={approvalModalOkay}
         onCancel={approvalModalCancel}
+        footer={
+          <div>
+            <Button key="Cancel" onClick={approvalModalCancel}>
+              Cancel
+            </Button>
+            <Button className=" bg-blue-300" onClick={approvalModalOkay}>
+              OK
+            </Button>
+          </div>
+        }
       >
         Are you sure you want to approve this capstone?
       </Modal>
@@ -348,6 +385,7 @@ function AdminCapstone() {
             placeholder="input search text"
             className=" rounded border border-solid border-gray-500 "
             style={{ width: 200 }}
+            onChange={handleSearchChange}
           />
         </div>
 
