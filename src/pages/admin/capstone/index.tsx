@@ -315,7 +315,7 @@ function AdminCapstone() {
             name="adviser"
             rules={[{ required: true, message: "Please input Adviser Name  " }]}
           >
-            <Input placeholder=" Abstract" />
+            <Input placeholder=" Adviser Name" />
           </Form.Item>
 
           <Form.Item

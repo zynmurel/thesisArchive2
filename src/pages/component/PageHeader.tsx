@@ -49,7 +49,7 @@ const PageHeader = ({ showModal }: any) => {
           <Space>
             <div className="flex flex-row items-center justify-center gap-4">
               <img
-                src={studentData?.image || ""}
+                src={studentData?.image ?? ""}
                 className="h-6 w-6 rounded-2xl"
                 alt="logo"
               />

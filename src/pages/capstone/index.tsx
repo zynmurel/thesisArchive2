@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -55,6 +56,8 @@ function Capstone() {
 
   const [value, setValue] = useState(1);
   const [course, setCourse] = useState("");
+
+  console.log("XXXXX", approvedCapstone);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -267,7 +270,6 @@ function Capstone() {
             </Form.Item>
           </Form>
         </Modal>
-        ;
         <div className='   className="border " h-full  w-full border-solid  border-gray-500'>
           <PageHeader studentData={studentData} showModal={showModal} />
           <div className="  mb-14 flex  justify-between ">
@@ -321,12 +323,21 @@ function Capstone() {
 
           <Table
             columns={studentsViewColumn(studentData)}
-            dataSource={approvedCapstone?.filter(
-              (item: any) =>
+            dataSource={approvedCapstone?.filter((item: any) => {
+              console.log(
+                item?.Students?.[0]?.Course?.coursename.toLowerCase(),
+              );
+              return (
                 item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
                 item.date.toLowerCase().includes(searchValue.toLowerCase()) ||
-                item.adviser.toLowerCase().includes(searchValue.toLowerCase()),
-            )}
+                item.adviser
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase()) ||
+                item?.Students?.[0]?.Course?.coursename
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase())
+              );
+            })}
           />
         </div>
       </DashboardLayout>
