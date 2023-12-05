@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef} from "react";
 import DashboardLayout from "~/pages/component/DashboardLayout";
 import PageHeader from "~/pages/component/PageHeader";
 import {
@@ -34,6 +34,8 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import dayjs from "dayjs";
 import PageHeaderAdmin from "~/pages/component/pageHeaderAdmin";
+import { useReactToPrint } from "react-to-print";
+
 
 const { Search } = Input;
 
@@ -49,12 +51,18 @@ const tabList = [
 ];
 
 function AdminCapstone() {
+
+
+  const [totalCapstone, setTotalCapstone] = useState(0);
+
+ 
   const [form] = Form.useForm();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [capstoneData, setCapstoneData] = useState<string>();
   const [pickerDate, setPickerDate] = useState<any>("");
   const [searchValue, setSearchValue] = useState("");
+  const componentRef =  useRef<HTMLDivElement>(null); // Specify the type of the ref
 
   const { data: courseData } = api.example.courseData.useQuery();
 
@@ -75,10 +83,36 @@ function AdminCapstone() {
 
   const [modalCapstone, setModalCapstone] = useState(false);
   const [imageUpload, setImageUpload] = useState<any>(null);
+  useEffect(() => {
+    // Update the totalCapstone count when the capstone data or searchValue changes
+    if (approveData) {
+      const filteredCapstones = approveData.filter((item: any) => {
+        return (
+          item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item.date.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item.adviser.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item?.Students?.[0]?.Course?.coursename
+            .toLowerCase()
+            .includes(searchValue.toLowerCase())
+        );
+      });
+      setTotalCapstone(filteredCapstones.length);
+    }
+  }, [approveData, searchValue]);
+  
+  const handlePrint = useReactToPrint({
+    content: () =>  componentRef.current,
+  });
 
   const adminCapstonTab: Record<string, React.ReactNode> = {
     tab1: (
+
+      
       <div className="  flex  w-full flex-nowrap">
+
+        
+        
+     
         <Table
           className=" w-full"
           columns={capstoneApprovalColumn(setApproveModal, setCapstoneData)}
@@ -97,7 +131,15 @@ function AdminCapstone() {
       </div>
     ),
     tab2: (
+      <div ref={componentRef}  >
+        <div  className=" flex  justify-between  p-10 "   > 
+          <p className="   "  >  Total Capstone: {totalCapstone}</p>
+
+
+            <button  onClick={handlePrint}  className="  exclude-in-print  p-2 bg-gray-500 rounded-md" >Print</button>
+          </div>
       <div className="  flex  w-full flex-nowrap">
+        
         <Table
           className=" w-full"
           columns={capstoneManagementColumn}
@@ -113,6 +155,7 @@ function AdminCapstone() {
             );
           })}
         ></Table>
+      </div>
       </div>
     ),
   };

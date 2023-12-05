@@ -40,6 +40,8 @@ interface StudentType {
   lastName: string;
   username: string;
   password: string;
+  confirmPassword: string;
+
   email: string;
   gender: string;
   studentNo: string;
@@ -72,8 +74,12 @@ export default function Home() {
 
   const { data: courseData } = api.example.courseData.useQuery();
 
+  
   const onFinish = (values: StudentType) => {
+
     console.log(values);
+    
+    if (values.password ===  values.confirmPassword)
     mutate({
       firstName: values.firstName,
       lastName: values.lastName,
@@ -85,6 +91,10 @@ export default function Home() {
       address: values.address,
       course: values.course,
     });
+
+    else {
+       alert("password and confirm password does not match")
+    }
   };
   const onChange = (e: RadioChangeEvent) => {
     console.log("radio checked", e.target.value);
@@ -136,7 +146,7 @@ export default function Home() {
         </div>
 
         <div
-          className=" h-1/2    bg-yellow-100 p-4   shadow-2xl  shadow-orange-300 "
+          className=" h-3/4    bg-yellow-100 p-4   shadow-2xl  shadow-orange-300 "
           style={{ width: "600px" }}
         >
           <div className=" flex  h-full w-full  flex-col items-center bg-yellow-100  ">
@@ -213,7 +223,29 @@ export default function Home() {
                       placeholder="Input Password"
                       type="password"
                     />
+                    
+                    
                   </Form.Item>
+
+                  <Form.Item
+                    name="confirmPassword"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input  confirm your password!",
+                      },
+                    ]}
+                    className=" w-full  items-center"
+                  >
+                    <input
+                      className=" flex h-8    w-full bg-gray-100  text-center  text-black"
+                      placeholder="Confirm Password"
+                      type="password"
+                    />
+                    
+                    
+                  </Form.Item>
+                  
                 </div>
                 <Form.Item
                   name="address"
@@ -260,7 +292,7 @@ export default function Home() {
                 <Form.Item
                   name="course"
                   rules={[
-                    { required: true, message: "Please input your Password!" },
+                    { required: true, message: "Please input your course!" },
                   ]}
                   className=" items-center"
                 >

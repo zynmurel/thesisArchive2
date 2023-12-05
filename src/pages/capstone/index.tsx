@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import DashboardLayout from "../component/DashboardLayout";
 import {
   Dropdown,
@@ -35,10 +35,18 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "~/config/firebase";
 import { v4 } from "uuid";
 import App from "../sampleUpload";
+import { useReactToPrint } from "react-to-print";
 const { Search } = Input;
+
+
 
 function Capstone() {
   const [form] = Form.useForm();
+  const componentRef = useRef<HTMLDivElement>(null); // Specify the type of the ref
+  
+
+  
+
   let id: any = null;
   if (typeof window !== "undefined") {
     id = localStorage.getItem("id");
@@ -56,6 +64,15 @@ function Capstone() {
 
   const [value, setValue] = useState(1);
   const [course, setCourse] = useState("");
+
+  const [totalCapstone, setTotalCapstone] = useState(0);
+
+  useEffect(() => {
+    if (approvedCapstone) {
+      setTotalCapstone(approvedCapstone.length);
+    }
+  }, [approvedCapstone]);
+
 
   console.log("XXXXX", approvedCapstone);
 
@@ -110,6 +127,23 @@ function Capstone() {
   // Search functionality
   const [searchValue, setSearchValue] = useState("");
 
+  useEffect(() => {
+    // Update the totalCapstone count when the capstone data or searchValue changes
+    if (approvedCapstone) {
+      const filteredCapstones = approvedCapstone.filter((item: any) => {
+        return (
+          item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item.date.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item.adviser.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item?.Students?.[0]?.Course?.coursename
+            .toLowerCase()
+            .includes(searchValue.toLowerCase())
+        );
+      });
+      setTotalCapstone(filteredCapstones.length);
+    }
+  }, [approvedCapstone, searchValue]);
+
   const handleSearchChange = (e: any) => {
     setSearchValue(e.target.value);
   };
@@ -155,6 +189,10 @@ function Capstone() {
       });
     }
   };
+
+  const handlePrint = useReactToPrint({
+    content: () =>  componentRef.current,
+  });
   return (
     <>
       <DashboardLayout>
@@ -252,7 +290,7 @@ function Capstone() {
                 { required: true, message: "Please input Adviser Name  " },
               ]}
             >
-              <Input placeholder=" Abstract" />
+              <Input placeholder=" Adviser name" />
             </Form.Item>
             <App
               imageUpload={imageUpload}
@@ -320,6 +358,16 @@ function Capstone() {
               </button>
             )}
           </div>
+          <div  ref={componentRef} >
+              
+
+          <div  className=" flex  justify-between  p-10"> 
+          <p className="   "  >  Total Capstone: {totalCapstone}</p>
+
+
+            <button  onClick={handlePrint}  className="  exclude-in-print  p-2 bg-gray-500 rounded-md" >Print</button>
+          </div>
+
 
           <Table
             columns={studentsViewColumn(studentData)}
@@ -339,6 +387,8 @@ function Capstone() {
               );
             })}
           />
+          
+          </div>
         </div>
       </DashboardLayout>
     </>
